@@ -44,6 +44,15 @@ public:
     };
 
     /**
+     * Enum for storage options in EEPROM.
+     */
+    enum store
+    {
+        storeAdd = 0,
+        storeChange
+    };
+
+    /**
      * Actual loc data of selected loc.
      */
     struct LocLibData
@@ -125,6 +134,11 @@ public:
     uint8_t FunctionAssignedGet(uint8_t number);
 
     /**
+     * Get the assigned functions of a loc in EEPROM.
+     */
+    bool FunctionAssignedGetStored(uint16_t address, uint8_t* functions);
+
+    /**
      * Get the status of a function.
      */
     function FunctionStatusGet(uint32_t number);
@@ -147,7 +161,7 @@ public:
     /**
      * Store locomotive in EEPROM.
      */
-    bool StoreLoc(uint16_t address, uint8_t* FunctionAssigment);
+    bool StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeAction);
 
     /**
      * Remove loc from EEPROM.
@@ -168,6 +182,11 @@ public:
      * Sort loc data in EEPROM.
      */
     void LocBubbleSort(void);
+
+    /**
+     * Read locdata direct based on index.
+     */
+    LocLibData* LocGetAllDataByIndex(uint8_t Index);
 
 private:
     LocLibData m_LocLibData;     /* Data of actual selected loc. */
