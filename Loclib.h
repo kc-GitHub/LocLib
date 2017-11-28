@@ -176,7 +176,7 @@ public:
     /**
      * Get the index of the selected loc.
      */
-    uint16_t GetActualSelectedLocIndex(void);
+    uint8_t GetActualSelectedLocIndex(void);
 
     /**
      * Sort loc data in EEPROM.
@@ -192,12 +192,6 @@ private:
     LocLibData m_LocLibData;     /* Data of actual selected loc. */
     uint8_t m_NumberOfLocs;      /* Number of locs. */
     uint8_t m_ActualSelectedLoc; /* Actual selected loc. */
-
-    const uint8_t locLibEepromVersion      = 2;  /* Version of data in EEPROM. */
-    const int locLibEepromAddressData      = 2;  /* Start in EEPROM address loc data. */
-    const uint8_t locLibMaxNumberOfLocs    = 64; /* Max number of locs in EEPROM. */
-    const int locLibEepromAddressVersion   = 0;  /* EEPROM address version info. */
-    const int locLibEepromAddressNumOfLocs = 1;  /* EEPROM address num of locs. */
 };
 
 #endif
