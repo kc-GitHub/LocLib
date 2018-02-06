@@ -311,7 +311,7 @@ uint8_t LocLib::CheckLoc(uint16_t address)
     bool Found    = false;
     uint8_t Index = 0;
     LocLibData Data;
-    int EepromAddressData = 2;
+    int EepromAddressData = EepCfg::locLibEepromAddressData;
 
     while ((Index < m_NumberOfLocs) && (Found == false))
     {
