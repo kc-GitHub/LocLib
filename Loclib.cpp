@@ -22,10 +22,20 @@ LocLib::LocLib()
 void LocLib::Init()
 {
     uint8_t Version;
+    uint8_t AcOptionEep;
 
     EEPROM.begin(1024);
 
-    Version = EEPROM.read(EepCfg::EepCfg::EepromVersionAddress);
+    Version     = EEPROM.read(EepCfg::EepCfg::EepromVersionAddress);
+    AcOptionEep = EEPROM.read(EepCfg::EepCfg::AcTypeControlAddress);
+
+    /* Check AC option.*/
+    switch (AcOptionEep)
+    {
+    case 0: m_AcOption = false; break;
+    case 1: m_AcOption = true; break;
+    default: m_AcOption = false; break;
+    }
 
     /* If new EEPROM version or initial empty EEPROM create one loc and store loc
      * in EEPROM.*/
@@ -64,67 +74,93 @@ bool LocLib::SpeedSet(int8_t Delta)
 {
     bool Result = true;
 
-    if (Delta == 0)
+    if (m_AcOption == false)
     {
-        /* Stop loc or when already stop change direction. */
-        if (m_LocLibData.Speed != 0)
+        if (Delta == 0)
         {
-            m_LocLibData.Speed = 0;
-        }
-        else
-        {
-            DirectionToggle();
-        }
-    }
-    else if (Delta > 0)
-    {
-        /* Handle direction change or increase / decrease speed depending on
-         * direction. */
-        if ((m_LocLibData.Speed == 0) && (m_LocLibData.Dir == directionBackWard))
-        {
-            m_LocLibData.Dir = directionForward;
-        }
-        else
-        {
-            if (m_LocLibData.Dir == directionForward)
+            /* Stop loc or when already stop change direction. */
+            if (m_LocLibData.Speed != 0)
             {
-                m_LocLibData.Speed++;
+                m_LocLibData.Speed = 0;
             }
             else
             {
-                if (m_LocLibData.Speed > 0)
-                {
-                    m_LocLibData.Speed--;
-                }
+                DirectionToggle();
             }
         }
-    }
-    else if (Delta < 0)
-    {
-        /* Handle direction change or increase / decrease speed depending on
-         * direction. */
-        if ((m_LocLibData.Speed == 0) && (m_LocLibData.Dir == directionForward))
+        else if (Delta > 0)
         {
-            m_LocLibData.Dir = directionBackWard;
-        }
-        else
-        {
-            if (m_LocLibData.Dir == directionForward)
+            /* Handle direction change or increase / decrease speed depending on
+             * direction. */
+            if ((m_LocLibData.Speed == 0) && (m_LocLibData.Dir == directionBackWard))
             {
-                if (m_LocLibData.Speed > 0)
-                {
-                    m_LocLibData.Speed--;
-                }
+                m_LocLibData.Dir = directionForward;
             }
             else
             {
-                m_LocLibData.Speed++;
+                if (m_LocLibData.Dir == directionForward)
+                {
+                    m_LocLibData.Speed++;
+                }
+                else
+                {
+                    if (m_LocLibData.Dir == directionForward)
+                    {
+                        m_LocLibData.Speed--;
+                    }
+                }
+            }
+        }
+        else if (Delta < 0)
+        {
+            /* Handle direction change or increase / decrease speed depending on
+             * direction. */
+            if ((m_LocLibData.Speed == 0) && (m_LocLibData.Dir == directionForward))
+            {
+                m_LocLibData.Dir = directionBackWard;
+            }
+            else
+            {
+                if (m_LocLibData.Dir == directionForward)
+                {
+                    if (m_LocLibData.Speed > 0)
+                    {
+                        m_LocLibData.Speed--;
+                    }
+                }
+                else
+                {
+                    m_LocLibData.Speed++;
+                }
             }
         }
     }
     else
     {
-        Result = false;
+        /* AC option active, direction change only with push button or when loc is already stopped. */
+        if (Delta > 0)
+        {
+            m_LocLibData.Speed++;
+        }
+        else if (Delta < 0)
+        {
+            if (m_LocLibData.Speed > 0)
+            {
+                m_LocLibData.Speed--;
+            }
+        }
+        else
+        {
+            /* Stop loc or when already stop change direction. */
+            if (m_LocLibData.Speed != 0)
+            {
+                m_LocLibData.Speed = 0;
+            }
+            else
+            {
+                DirectionToggle();
+            }
+        }
     }
 
     /* Limit speed based on decoder type. */

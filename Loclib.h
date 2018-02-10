@@ -191,6 +191,7 @@ public:
 private:
     LocLibData m_LocLibData;     /* Data of actual selected loc. */
     uint8_t m_NumberOfLocs;      /* Number of locs. */
+    bool m_AcOption;             /* Direction change only with direction button. */
     uint8_t m_ActualSelectedLoc; /* Actual selected loc. */
 };
 
