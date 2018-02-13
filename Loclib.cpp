@@ -100,13 +100,29 @@ bool LocLib::SpeedSet(int8_t Delta)
             {
                 if (m_LocLibData.Dir == directionForward)
                 {
-                    m_LocLibData.Speed++;
+                    /* Handle speed increase*/
+                    if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
+                    {
+                        m_LocLibData.Speed += 2;
+                    }
+                    else
+                    {
+                        m_LocLibData.Speed++;
+                    }
                 }
                 else
                 {
                     if (m_LocLibData.Dir == directionForward)
                     {
-                        m_LocLibData.Speed--;
+                        /* Handle speed decrease*/
+                        if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
+                        {
+                            m_LocLibData.Speed -= 2;
+                        }
+                        else if (m_LocLibData.Speed > 0)
+                        {
+                            m_LocLibData.Speed--;
+                        }
                     }
                 }
             }
@@ -123,14 +139,30 @@ bool LocLib::SpeedSet(int8_t Delta)
             {
                 if (m_LocLibData.Dir == directionForward)
                 {
+                    /* Handle speed decrease*/
                     if (m_LocLibData.Speed > 0)
                     {
-                        m_LocLibData.Speed--;
+                        if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
+                        {
+                            m_LocLibData.Speed -= 2;
+                        }
+                        else if (m_LocLibData.Speed > 0)
+                        {
+                            m_LocLibData.Speed--;
+                        }
                     }
                 }
                 else
                 {
-                    m_LocLibData.Speed++;
+                    /* Handle speed increase*/
+                    if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
+                    {
+                        m_LocLibData.Speed += 2;
+                    }
+                    else
+                    {
+                        m_LocLibData.Speed++;
+                    }
                 }
             }
         }
@@ -140,11 +172,24 @@ bool LocLib::SpeedSet(int8_t Delta)
         /* AC option active, direction change only with push button or when loc is already stopped. */
         if (Delta > 0)
         {
-            m_LocLibData.Speed++;
+            /* Handle speed increase*/
+            if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
+            {
+                m_LocLibData.Speed += 2;
+            }
+            else
+            {
+                m_LocLibData.Speed++;
+            }
         }
         else if (Delta < 0)
         {
-            if (m_LocLibData.Speed > 0)
+            /* Handle speed decrease*/
+            if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
+            {
+                m_LocLibData.Speed -= 2;
+            }
+            else if (m_LocLibData.Speed > 0)
             {
                 m_LocLibData.Speed--;
             }
