@@ -79,14 +79,7 @@ bool LocLib::SpeedSet(int8_t Delta)
         if (Delta == 0)
         {
             /* Stop loc or when already stop change direction. */
-            if (m_LocLibData.Speed != 0)
-            {
-                m_LocLibData.Speed = 0;
-            }
-            else
-            {
-                DirectionToggle();
-            }
+            SpeedStopOrChangeDirection();
         }
         else if (Delta > 0)
         {
@@ -101,29 +94,12 @@ bool LocLib::SpeedSet(int8_t Delta)
                 if (m_LocLibData.Dir == directionForward)
                 {
                     /* Handle speed increase*/
-                    if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
-                    {
-                        m_LocLibData.Speed += 2;
-                    }
-                    else
-                    {
-                        m_LocLibData.Speed++;
-                    }
+                    SpeedIncrease();
                 }
                 else
                 {
-                    if (m_LocLibData.Dir == directionForward)
-                    {
-                        /* Handle speed decrease*/
-                        if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
-                        {
-                            m_LocLibData.Speed -= 2;
-                        }
-                        else if (m_LocLibData.Speed > 0)
-                        {
-                            m_LocLibData.Speed--;
-                        }
-                    }
+                    /* Handle speed decrease*/
+                    SpeedDecrease();
                 }
             }
         }
@@ -140,29 +116,13 @@ bool LocLib::SpeedSet(int8_t Delta)
                 if (m_LocLibData.Dir == directionForward)
                 {
                     /* Handle speed decrease*/
-                    if (m_LocLibData.Speed > 0)
-                    {
-                        if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
-                        {
-                            m_LocLibData.Speed -= 2;
-                        }
-                        else if (m_LocLibData.Speed > 0)
-                        {
-                            m_LocLibData.Speed--;
-                        }
-                    }
+                    SpeedDecrease();
                 }
                 else
                 {
+
                     /* Handle speed increase*/
-                    if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
-                    {
-                        m_LocLibData.Speed += 2;
-                    }
-                    else
-                    {
-                        m_LocLibData.Speed++;
-                    }
+                    SpeedIncrease();
                 }
             }
         }
@@ -173,38 +133,17 @@ bool LocLib::SpeedSet(int8_t Delta)
         if (Delta > 0)
         {
             /* Handle speed increase*/
-            if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
-            {
-                m_LocLibData.Speed += 2;
-            }
-            else
-            {
-                m_LocLibData.Speed++;
-            }
+            SpeedIncrease();
         }
         else if (Delta < 0)
         {
             /* Handle speed decrease*/
-            if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
-            {
-                m_LocLibData.Speed -= 2;
-            }
-            else if (m_LocLibData.Speed > 0)
-            {
-                m_LocLibData.Speed--;
-            }
+            SpeedDecrease();
         }
         else
         {
             /* Stop loc or when already stop change direction. */
-            if (m_LocLibData.Speed != 0)
-            {
-                m_LocLibData.Speed = 0;
-            }
-            else
-            {
-                DirectionToggle();
-            }
+            SpeedStopOrChangeDirection();
         }
     }
 
@@ -574,4 +513,50 @@ LocLib::LocLibData* LocLib::LocGetAllDataByIndex(uint8_t Index)
 {
     EEPROM.get(EepCfg::locLibEepromAddressData + (Index * sizeof(LocLibData)), m_LocLibData);
     return (&m_LocLibData);
+}
+
+/***********************************************************************************************************************
+ */
+uint16_t LocLib::SpeedIncrease(void)
+{
+    if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
+    {
+        m_LocLibData.Speed += 2;
+    }
+    else
+    {
+        m_LocLibData.Speed++;
+    }
+}
+
+/***********************************************************************************************************************
+ */
+uint16_t LocLib::SpeedDecrease(void)
+{
+
+    if (m_LocLibData.Speed > 0)
+    {
+        if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
+        {
+            m_LocLibData.Speed -= 2;
+        }
+        else if (m_LocLibData.Speed > 0)
+        {
+            m_LocLibData.Speed--;
+        }
+    }
+}
+
+/***********************************************************************************************************************
+ */
+void LocLib::SpeedStopOrChangeDirection(void)
+{
+    if (m_LocLibData.Speed != 0)
+    {
+        m_LocLibData.Speed = 0;
+    }
+    else
+    {
+        DirectionToggle();
+    }
 }

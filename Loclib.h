@@ -189,6 +189,21 @@ public:
     LocLibData* LocGetAllDataByIndex(uint8_t Index);
 
 private:
+    /**
+     * Increase the speed.
+     */
+    uint16_t SpeedIncrease(void);
+
+    /**
+     * Decrease the speed.
+     */
+    uint16_t SpeedDecrease(void);
+
+    /**
+     * Set speed to zero or change direction when speed already 0.
+     */
+    void SpeedStopOrChangeDirection(void);
+
     LocLibData m_LocLibData;     /* Data of actual selected loc. */
     uint8_t m_NumberOfLocs;      /* Number of locs. */
     bool m_AcOption;             /* Direction change only with direction button. */
