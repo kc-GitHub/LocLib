@@ -211,7 +211,7 @@ LocLib::direction LocLib::DirectionGet(void) { return (m_LocLibData.Dir); }
 
 /***********************************************************************************************************************
  */
-void LocLib::DirectionSet(direction dir) { m_LocLibData.Dir = dir; }
+void LocLib::DirectionSet(LocLib::direction dir) { m_LocLibData.Dir = dir; }
 
 /***********************************************************************************************************************
  */
@@ -517,7 +517,7 @@ LocLib::LocLibData* LocLib::LocGetAllDataByIndex(uint8_t Index)
 
 /***********************************************************************************************************************
  */
-uint16_t LocLib::SpeedIncrease(void)
+void LocLib::SpeedIncrease(void)
 {
     if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
     {
@@ -531,7 +531,7 @@ uint16_t LocLib::SpeedIncrease(void)
 
 /***********************************************************************************************************************
  */
-uint16_t LocLib::SpeedDecrease(void)
+void LocLib::SpeedDecrease(void)
 {
 
     if (m_LocLibData.Speed > 0)

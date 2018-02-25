@@ -192,12 +192,12 @@ private:
     /**
      * Increase the speed.
      */
-    uint16_t SpeedIncrease(void);
+    void SpeedIncrease(void);
 
     /**
      * Decrease the speed.
      */
-    uint16_t SpeedDecrease(void);
+    void SpeedDecrease(void);
 
     /**
      * Set speed to zero or change direction when speed already 0.
