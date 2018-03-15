@@ -6,12 +6,14 @@
 #include <EEPROM.h>
 #include <Loclib.h>
 #include <eep_cfg.h>
+#include <spi_flash.h>
 #include <string.h>
 
 /***********************************************************************************************************************
  */
 LocLib::LocLib()
 {
+    m_AcOption          = 0;
     m_NumberOfLocs      = 0;
     m_ActualSelectedLoc = 0;
     memset(&m_LocLibData, 0, sizeof(LocLibData));
@@ -24,10 +26,10 @@ void LocLib::Init()
     uint8_t Version;
     uint8_t AcOptionEep;
 
-    EEPROM.begin(1024);
+    EEPROM.begin(SPI_FLASH_SEC_SIZE);
 
-    Version     = EEPROM.read(EepCfg::EepCfg::EepromVersionAddress);
-    AcOptionEep = EEPROM.read(EepCfg::EepCfg::AcTypeControlAddress);
+    Version     = EEPROM.read(EepCfg::EepromVersionAddress);
+    AcOptionEep = EEPROM.read(EepCfg::AcTypeControlAddress);
 
     /* Check AC option.*/
     switch (AcOptionEep)
@@ -38,8 +40,8 @@ void LocLib::Init()
     }
 
     /* If new EEPROM version or initial empty EEPROM create one loc and store loc
-     * in EEPROM.*/
-    if (Version != EepCfg::EepCfg::EepromVersion)
+       in EEPROM.*/
+    if (Version != EepCfg::EepromVersion)
     {
         m_NumberOfLocs                     = 1;
         m_LocLibData.Addres                = 3;
@@ -390,7 +392,7 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
         if (storeAction == storeAdd)
         {
             /* Not present, add data. */
-            if (m_NumberOfLocs < EepCfg::locLibMaxNumberOfLocs)
+            if (m_NumberOfLocs < MaxNumberOfLocs)
             {
                 /* Max number of locs not exceeded. */
                 Data.Addres   = address;
