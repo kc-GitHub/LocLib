@@ -244,7 +244,7 @@ bool LocLib::FunctionAssignedGetStored(uint16_t address, uint8_t* functions)
     bool Found    = false;
     uint8_t Index = 0;
     LocLibData Data;
-    int EepromAddressData = 2;
+    int EepromAddressData = EepCfg::locLibEepromAddressData;
 
     while ((Index < m_NumberOfLocs) && (Found == false))
     {
