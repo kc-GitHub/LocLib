@@ -164,9 +164,14 @@ public:
     bool StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeAction);
 
     /**
-     * Remove loc from EEPROM.
+     * Remove loc with given address from EEPROM.
      */
     bool RemoveLoc(uint16_t address);
+
+    /**
+     * Remove all locs from EEPROM.
+     */
+    void RemoveAllLocs(void);
 
     /**
      * Get actual number of locs in EEPROM.
@@ -187,6 +192,11 @@ public:
      * Read locdata direct based on index.
      */
     LocLibData* LocGetAllDataByIndex(uint8_t Index);
+
+    /**
+     * Set default loc data (1 loc with address 3) in EEPROM.
+     */
+    void InitialLocStore(void);
 
 private:
     /**

@@ -43,21 +43,9 @@ void LocLib::Init()
        in EEPROM.*/
     if (Version != EepCfg::EepromVersion)
     {
-        m_NumberOfLocs                     = 1;
-        m_LocLibData.Addres                = 3;
-        m_LocLibData.Steps                 = decoderStep28;
-        m_LocLibData.Dir                   = directionForward;
-        m_LocLibData.Speed                 = 0;
-        m_ActualSelectedLoc                = 0;
-        m_LocLibData.FunctionAssignment[0] = 0;
-        m_LocLibData.FunctionAssignment[1] = 1;
-        m_LocLibData.FunctionAssignment[2] = 2;
-        m_LocLibData.FunctionAssignment[3] = 3;
-        m_LocLibData.FunctionAssignment[4] = 4;
+        InitialLocStore();
 
         EEPROM.write(EepCfg::EepromVersionAddress, EepCfg::EepromVersion);
-        EEPROM.write(EepCfg::locLibEepromAddressNumOfLocs, m_NumberOfLocs);
-        EEPROM.put(EepCfg::locLibEepromAddressData, m_LocLibData);
         EEPROM.commit();
     }
     else
@@ -473,6 +461,10 @@ bool LocLib::RemoveLoc(uint16_t address)
 
 /***********************************************************************************************************************
  */
+void LocLib::RemoveAllLocs(void) { m_NumberOfLocs = 1; }
+
+/***********************************************************************************************************************
+ */
 uint16_t LocLib::GetNumberOfLocs(void) { return (m_NumberOfLocs); }
 
 /***********************************************************************************************************************
@@ -561,4 +553,24 @@ void LocLib::SpeedStopOrChangeDirection(void)
     {
         DirectionToggle();
     }
+}
+
+/***********************************************************************************************************************
+ */
+void LocLib::InitialLocStore(void)
+{
+    m_NumberOfLocs                     = 1;
+    m_LocLibData.Addres                = 3;
+    m_LocLibData.Steps                 = decoderStep28;
+    m_LocLibData.Dir                   = directionForward;
+    m_LocLibData.Speed                 = 0;
+    m_ActualSelectedLoc                = 0;
+    m_LocLibData.FunctionAssignment[0] = 0;
+    m_LocLibData.FunctionAssignment[1] = 1;
+    m_LocLibData.FunctionAssignment[2] = 2;
+    m_LocLibData.FunctionAssignment[3] = 3;
+    m_LocLibData.FunctionAssignment[4] = 4;
+    EEPROM.write(EepCfg::locLibEepromAddressNumOfLocs, m_NumberOfLocs);
+    EEPROM.put(EepCfg::locLibEepromAddressData, m_LocLibData);
+    EEPROM.commit();
 }
