@@ -2,11 +2,11 @@
  *Supporting routines for WifiManualControl to handle locomotive data.
  */
 
+#include "app_cfg.h"
+#include "eep_cfg.h"
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <Loclib.h>
-#include <eep_cfg.h>
-#include <spi_flash.h>
 #include <string.h>
 
 /***********************************************************************************************************************
@@ -14,52 +14,48 @@
 LocLib::LocLib()
 {
     m_AcOption          = 0;
-    m_NumberOfLocs      = 0;
+    m_NumberOfLocs      = 1;
     m_ActualSelectedLoc = 0;
     memset(&m_LocLibData, 0, sizeof(LocLibData));
 }
 
 /***********************************************************************************************************************
  */
-void LocLib::Init()
+void LocLib::Init(LocStorage Storage)
 {
-    uint8_t Version;
-    uint8_t AcOptionEep;
-
-    EEPROM.begin(SPI_FLASH_SEC_SIZE);
-
-    Version     = EEPROM.read(EepCfg::EepromVersionAddress);
-    AcOptionEep = EEPROM.read(EepCfg::AcTypeControlAddress);
-
-    /* Check AC option.*/
-    switch (AcOptionEep)
-    {
-    case 0: m_AcOption = false; break;
-    case 1: m_AcOption = true; break;
-    default: m_AcOption = false; break;
-    }
-
     /* If new EEPROM version or initial empty EEPROM create one loc and store loc
        in EEPROM.*/
-    if (Version != EepCfg::EepromVersion)
+    m_LocStorage = Storage;
+
+    if (m_LocStorage.VersionCheck() == false)
     {
         InitialLocStore();
-
-        EEPROM.write(EepCfg::EepromVersionAddress, EepCfg::EepromVersion);
-        EEPROM.commit();
+        m_LocStorage.NumberOfLocsSet(m_NumberOfLocs);
+        StoreLoc(m_LocLibData.Addres, m_LocLibData.FunctionAssignment, storeAdd);
     }
-    else
+
+    /* Check AC option.*/
+    m_AcOption = m_LocStorage.AcOptionGet();
+
+    /* Read data from EEPROM of first loc. */
+    m_LocLibData.Addres = 55;
+    m_LocStorage.LocDataGet(&m_LocLibData, 0);
+    m_NumberOfLocs = m_LocStorage.NumberOfLocsGet();
+
+    /* Get number of locs and check it... */
+    if (m_NumberOfLocs > MaxNumberOfLocs)
     {
-        /* Read data from EEPROM of first loc. */
-        m_NumberOfLocs = EEPROM.read(EepCfg::locLibEepromAddressNumOfLocs);
-        EEPROM.get(EepCfg::locLibEepromAddressData, m_LocLibData);
+        m_LocStorage.NumberOfLocsSet(1);
+        m_NumberOfLocs = 1;
     }
 }
 
 /***********************************************************************************************************************
  */
-LocLib::LocLibData* LocLib::DataGet(void) { return (&m_LocLibData); }
+LocLibData* LocLib::DataGet(void) { return (&m_LocLibData); }
 
+/***********************************************************************************************************************
+ */
 bool LocLib::SpeedSet(int8_t Delta)
 {
     bool Result = true;
@@ -179,7 +175,7 @@ void LocLib::DecoderStepsUpdate(decoderSteps Steps) { m_LocLibData.Steps = Steps
 
 /***********************************************************************************************************************
  */
-LocLib::decoderSteps LocLib::DecoderStepsGet(void) { return (m_LocLibData.Steps); }
+decoderSteps LocLib::DecoderStepsGet(void) { return (m_LocLibData.Steps); }
 
 /***********************************************************************************************************************
  */
@@ -197,19 +193,19 @@ void LocLib::DirectionToggle(void)
 
 /***********************************************************************************************************************
  */
-LocLib::direction LocLib::DirectionGet(void) { return (m_LocLibData.Dir); }
+direction LocLib::DirectionGet(void) { return (m_LocLibData.Dir); }
 
 /***********************************************************************************************************************
  */
-void LocLib::DirectionSet(LocLib::direction dir) { m_LocLibData.Dir = dir; }
+void LocLib::DirectionSet(direction dir) { m_LocLibData.Dir = dir; }
 
 /***********************************************************************************************************************
  */
-void LocLib::FunctionUpdate(uint32_t FunctionData) { m_LocLibData.Function = FunctionData << 1; }
+void LocLib::FunctionUpdate(uint32_t FunctionData) { m_LocLibData.Function = FunctionData; }
 
 /***********************************************************************************************************************
  */
-void LocLib::FunctionToggle(uint8_t number) { m_LocLibData.Function ^= (1 << (number + 1)); }
+void LocLib::FunctionToggle(uint8_t number) { m_LocLibData.Function ^= (1 << number); }
 
 /***********************************************************************************************************************
  */
@@ -232,12 +228,11 @@ bool LocLib::FunctionAssignedGetStored(uint16_t address, uint8_t* functions)
     bool Found    = false;
     uint8_t Index = 0;
     LocLibData Data;
-    int EepromAddressData = EepCfg::locLibEepromAddressData;
 
     while ((Index < m_NumberOfLocs) && (Found == false))
     {
         // Read data from EEPROM and check address.
-        EEPROM.get(EepromAddressData, Data);
+        m_LocStorage.LocDataGet(&Data, Index);
 
         if (Data.Addres == address)
         {
@@ -247,7 +242,6 @@ bool LocLib::FunctionAssignedGetStored(uint16_t address, uint8_t* functions)
         else
         {
             Index++;
-            EepromAddressData += sizeof(LocLibData);
         }
     }
 
@@ -262,7 +256,7 @@ LocLib::function LocLib::FunctionStatusGet(uint32_t number)
 
     if (number <= 28)
     {
-        if ((m_LocLibData.Function & (1 << (number + 1))) == (1 << (number + 1)))
+        if (m_LocLibData.Function & (1 << number))
         {
             Result = functionOn;
         }
@@ -304,7 +298,7 @@ uint16_t LocLib::GetNextLoc(int8_t Delta)
             }
         }
 
-        EEPROM.get(EepCfg::locLibEepromAddressData + (m_ActualSelectedLoc * sizeof(LocLibData)), m_LocLibData);
+        m_LocStorage.LocDataGet(&m_LocLibData, m_ActualSelectedLoc);
     }
 
     return (m_LocLibData.Addres);
@@ -321,12 +315,11 @@ uint8_t LocLib::CheckLoc(uint16_t address)
     bool Found    = false;
     uint8_t Index = 0;
     LocLibData Data;
-    int EepromAddressData = EepCfg::locLibEepromAddressData;
 
     while ((Index < m_NumberOfLocs) && (Found == false))
     {
         // Read data from EEPROM and check address.
-        EEPROM.get(EepromAddressData, Data);
+        m_LocStorage.LocDataGet(&Data, Index);
 
         if (Data.Addres == address)
         {
@@ -335,7 +328,6 @@ uint8_t LocLib::CheckLoc(uint16_t address)
         else
         {
             Index++;
-            EepromAddressData += sizeof(LocLibData);
         }
     }
 
@@ -354,7 +346,6 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
     LocLibData Data;
     uint8_t LocIndex;
     bool Result = false;
-    int EepromAddressData;
 
     LocIndex = CheckLoc(address);
 
@@ -364,13 +355,10 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
         if (storeAction == storeChange)
         {
             /* Read data, update function data and store. */
-            EEPROM.get(EepCfg::locLibEepromAddressData + (LocIndex * sizeof(LocLibData)), Data);
-            memcpy(Data.FunctionAssignment, FunctionAssigment, 5);
-            EEPROM.put(EepCfg::locLibEepromAddressData + (LocIndex * sizeof(LocLibData)), Data);
-            EEPROM.commit();
+            m_LocStorage.LocDataGet(&Data, LocIndex);
 
-            /* Read data to update actual loc data. */
-            EEPROM.get(EepCfg::locLibEepromAddressData + (LocIndex * sizeof(LocLibData)), m_LocLibData);
+            memcpy(Data.FunctionAssignment, FunctionAssigment, 5);
+            m_LocStorage.LocDataSet(&Data, LocIndex);
 
             Result = true;
         }
@@ -389,17 +377,14 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
                 Data.Speed    = 0;
                 Data.Function = 0;
                 memcpy(Data.FunctionAssignment, FunctionAssigment, 5);
-
-                EepromAddressData = EepCfg::locLibEepromAddressData + (m_NumberOfLocs * sizeof(LocLibData));
                 m_NumberOfLocs++;
 
-                EEPROM.write(EepCfg::locLibEepromAddressNumOfLocs, m_NumberOfLocs);
-                EEPROM.put(EepromAddressData, Data);
-                EEPROM.commit();
+                m_LocStorage.NumberOfLocsSet(m_NumberOfLocs);
+                m_LocStorage.LocDataSet(&Data, m_NumberOfLocs - 1);
 
-                /* Get newly added locdata. */
+                /* Get newly added loc data. */
                 m_ActualSelectedLoc = m_NumberOfLocs - 1;
-                EEPROM.get(EepCfg::locLibEepromAddressData + (m_ActualSelectedLoc * sizeof(LocLibData)), m_LocLibData);
+                m_LocStorage.LocDataGet(&m_LocLibData, m_ActualSelectedLoc);
 
                 Result = true;
             }
@@ -430,27 +415,25 @@ bool LocLib::RemoveLoc(uint16_t address)
             /* Copy data next loc to this location so loc is removed. */
             while ((Index + 1) < m_NumberOfLocs)
             {
-                EEPROM.get(EepCfg::locLibEepromAddressData + ((Index + 1) * sizeof(LocLibData)), Data);
-                EEPROM.put(EepCfg::locLibEepromAddressData + (Index * sizeof(LocLibData)), Data);
-                EEPROM.commit();
+                m_LocStorage.LocDataGet(&Data, Index + 1);
+                m_LocStorage.LocDataSet(&Data, Index);
                 Index++;
             }
 
             m_NumberOfLocs--;
-            EEPROM.write(EepCfg::locLibEepromAddressNumOfLocs, m_NumberOfLocs);
-            EEPROM.commit();
+            m_LocStorage.NumberOfLocsSet(m_NumberOfLocs);
 
             Result = true;
 
             /* Load data for "next" loc... */
             if (LocIndex < m_NumberOfLocs)
             {
-                EEPROM.get(EepCfg::locLibEepromAddressData + (LocIndex * sizeof(LocLibData)), m_LocLibData);
+                m_LocStorage.LocDataGet(&m_LocLibData, LocIndex);
             }
             else
             {
                 /* Last item in list was deleted. */
-                EEPROM.get(EepCfg::locLibEepromAddressData + ((m_NumberOfLocs - 1) * sizeof(LocLibData)), m_LocLibData);
+                m_LocStorage.LocDataGet(&m_LocLibData, m_NumberOfLocs - 1);
                 m_ActualSelectedLoc = m_NumberOfLocs - 1;
             }
         }
@@ -484,18 +467,16 @@ void LocLib::LocBubbleSort(void)
     {
         for (j = 0; (j < m_NumberOfLocs - 1 - i); ++j)
         {
-            EEPROM.get(EepCfg::locLibEepromAddressData + (j * sizeof(LocLibData)), Data_1);
-            EEPROM.get(EepCfg::locLibEepromAddressData + ((j + 1) * sizeof(LocLibData)), Data_2);
+            m_LocStorage.LocDataGet(&Data_1, j);
+            m_LocStorage.LocDataGet(&Data_2, (j + 1));
 
             if (Data_1.Addres > Data_2.Addres)
             {
                 memcpy(&DataTemp, &Data_2, sizeof(LocLibData));
                 memcpy(&Data_2, &Data_1, sizeof(LocLibData));
                 memcpy(&Data_1, &DataTemp, sizeof(LocLibData));
-
-                EEPROM.put(EepCfg::locLibEepromAddressData + (j * sizeof(LocLibData)), Data_1);
-                EEPROM.put(EepCfg::locLibEepromAddressData + ((j + 1) * sizeof(LocLibData)), Data_2);
-                EEPROM.commit();
+                m_LocStorage.LocDataSet(&Data_1, j);
+                m_LocStorage.LocDataSet(&Data_2, (j + 1));
             }
         }
     }
@@ -503,9 +484,9 @@ void LocLib::LocBubbleSort(void)
 
 /***********************************************************************************************************************
  */
-LocLib::LocLibData* LocLib::LocGetAllDataByIndex(uint8_t Index)
+LocLibData* LocLib::LocGetAllDataByIndex(uint8_t Index)
 {
-    EEPROM.get(EepCfg::locLibEepromAddressData + (Index * sizeof(LocLibData)), m_LocLibData);
+    m_LocStorage.LocDataGet(&m_LocLibData, Index);
     return (&m_LocLibData);
 }
 
@@ -527,7 +508,6 @@ void LocLib::SpeedIncrease(void)
  */
 void LocLib::SpeedDecrease(void)
 {
-
     if (m_LocLibData.Speed > 0)
     {
         if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
@@ -556,6 +536,24 @@ void LocLib::SpeedStopOrChangeDirection(void)
 }
 
 /***********************************************************************************************************************
+ * limit maximum loc addres.
+ */
+uint16_t LocLib::limitLocAddress(uint16_t locAddress)
+{
+    uint16_t locAdrresReturn = locAddress;
+    if (locAdrresReturn > ADDRESS_LOC_MAX)
+    {
+        locAdrresReturn = ADDRESS_LOC_MIN;
+    }
+    else if (locAdrresReturn == 0)
+    {
+        locAdrresReturn = ADDRESS_LOC_MAX;
+    }
+
+    return (locAdrresReturn);
+}
+
+/***********************************************************************************************************************
  */
 void LocLib::InitialLocStore(void)
 {
@@ -570,7 +568,6 @@ void LocLib::InitialLocStore(void)
     m_LocLibData.FunctionAssignment[2] = 2;
     m_LocLibData.FunctionAssignment[3] = 3;
     m_LocLibData.FunctionAssignment[4] = 4;
-    EEPROM.write(EepCfg::locLibEepromAddressNumOfLocs, m_NumberOfLocs);
-    EEPROM.put(EepCfg::locLibEepromAddressData, m_LocLibData);
-    EEPROM.commit();
+
+    m_LocStorage.LocDataSet(&m_LocLibData, 0);
 }

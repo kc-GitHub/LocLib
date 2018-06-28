@@ -8,30 +8,13 @@
 #ifndef LOC_LIB_H
 #define LOC_LIB_H
 
+#include "LocStorage.h"
+#include "LoclibData.h"
 #include <Arduino.h>
 
 class LocLib
 {
 public:
-    /**
-     * Decoder steps of a loc.
-     */
-    enum decoderSteps
-    {
-        decoderStep14 = 0,
-        decoderStep28,
-        decoderStep128
-    };
-
-    /**
-     * Direction of a loc.
-     */
-    enum direction
-    {
-        directionForward = 0,
-        directionBackWard
-    };
-
     /**
      * Function options.
      */
@@ -39,8 +22,7 @@ public:
     {
         functionOff = 0,
         functionOn,
-        functionToggle,
-        functionNone,
+        functionNone
     };
 
     /**
@@ -52,26 +34,13 @@ public:
         storeChange
     };
 
-    /**
-     * Actual loc data of selected loc.
-     */
-    struct LocLibData
-    {
-        uint16_t Addres;               /* Address of loc */
-        uint16_t Speed;                /* Actual speed of loc */
-        direction Dir;                 /* Direction of loc */
-        decoderSteps Steps;            /* Decoder steps of loc */
-        uint32_t Function;             /* Actual functions of loc. */
-        uint8_t FunctionAssignment[5]; /* Assigned functions to buttons of loc. */
-    };
-
     /* Constructor. */
     LocLib();
 
     /**
      * Init of loc module.
      */
-    void Init();
+    void Init(LocStorage Storage);
 
     /**
      * Get pointer to data of selected loc.
@@ -198,6 +167,11 @@ public:
      */
     void InitialLocStore(void);
 
+    /**
+     * Check for min/max loc address.
+     */
+    uint16_t limitLocAddress(uint16_t locAddress);
+
 private:
     /**
      * Increase the speed.
@@ -214,12 +188,15 @@ private:
      */
     void SpeedStopOrChangeDirection(void);
 
-    LocLibData m_LocLibData;     /* Data of actual selected loc. */
+    LocLibData m_LocLibData; /* Data of actual selected loc. */
+    LocStorage m_LocStorage;
     uint8_t m_NumberOfLocs;      /* Number of locs. */
     bool m_AcOption;             /* Direction change only with direction button. */
     uint8_t m_ActualSelectedLoc; /* Actual selected loc. */
 
-    static const uint8_t MaxNumberOfLocs = 64; /* Max number of locs. */
+    static const uint8_t MaxNumberOfLocs  = 64; /* Max number of locs. */
+    static const uint16_t ADDRESS_LOC_MIN = 1;
+    static const uint16_t ADDRESS_LOC_MAX = 9999;
 };
 
 #endif
