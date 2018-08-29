@@ -365,8 +365,10 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
     }
     else
     {
-        if (storeAction == storeAdd)
+        switch (storeAction)
         {
+        case storeAdd:
+        case storeAddNoAutoSelect:
             /* Not present, add data. */
             if (m_NumberOfLocs < MaxNumberOfLocs)
             {
@@ -383,11 +385,15 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
                 m_LocStorage.LocDataSet(&Data, m_NumberOfLocs - 1);
 
                 /* Get newly added loc data. */
-                m_ActualSelectedLoc = m_NumberOfLocs - 1;
-                m_LocStorage.LocDataGet(&m_LocLibData, m_ActualSelectedLoc);
-
+                if (storeAction == storeAdd)
+                {
+                    m_ActualSelectedLoc = m_NumberOfLocs - 1;
+                    m_LocStorage.LocDataGet(&m_LocLibData, m_ActualSelectedLoc);
+                }
                 Result = true;
             }
+            break;
+        case storeChange: break;
         }
     }
 

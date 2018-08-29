@@ -31,7 +31,8 @@ public:
     enum store
     {
         storeAdd = 0,
-        storeChange
+        storeAddNoAutoSelect,
+        storeChange,
     };
 
     /* Constructor. */
