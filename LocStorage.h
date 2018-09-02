@@ -22,6 +22,8 @@ public:
     void XpNetAddressSet(uint8_t XpNetAddress);
 #endif
     void AcOptionSet(uint8_t acOption);
+    void EmergencyOptionSet(uint8_t emergency);
+    bool EmergencyOptionGet(void);
     uint8_t NumberOfLocsGet();
     void NumberOfLocsSet(uint8_t numberOfLocs);
     bool LocDataGet(LocLibData* DataPtr, uint8_t Index);

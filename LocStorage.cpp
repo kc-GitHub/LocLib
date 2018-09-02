@@ -173,6 +173,41 @@ void LocStorage::AcOptionSet(uint8_t acOption)
 
 /***********************************************************************************************************************
  */
+void LocStorage::EmergencyOptionSet(uint8_t emergency)
+{
+#if APP_CFG_UC == APP_CFG_UC_STM32
+    i2c_eeprom_write_byte(I2CAddressAT24C256, EepCfg::EmergencyStopEnabledAddress, (byte)(emergency));
+#elif APP_CFG_UC == APP_CFG_UC_ESP8266
+    EEPROM.write(EepCfg::EmergencyStopEnabledAddress, emergency);
+    EEPROM.commit();
+#endif
+}
+
+/***********************************************************************************************************************
+ */
+bool LocStorage::EmergencyOptionGet(void)
+{
+    bool Result = false;
+    uint8_t emergencyActive;
+
+#if APP_CFG_UC == APP_CFG_UC_STM32
+    emergencyActive = (uint8_t)(i2c_eeprom_read_byte(I2CAddressAT24C256, EepCfg::EmergencyStopEnabledAddress));
+#elif APP_CFG_UC == APP_CFG_UC_ESP8266
+    emergencyActive = EEPROM.read(EepCfg::EmergencyStopEnabledAddress);
+#endif
+
+    /* Check AC option.*/
+    switch (emergencyActive)
+    {
+    case 0: Result = false; break;
+    case 1: Result = true; break;
+    default: Result = false; break;
+    }
+    return (Result);
+}
+
+/***********************************************************************************************************************
+ */
 uint8_t LocStorage::NumberOfLocsGet()
 {
     uint8_t NumOfLocs;
@@ -180,7 +215,7 @@ uint8_t LocStorage::NumberOfLocsGet()
 #if APP_CFG_UC == APP_CFG_UC_STM32
     NumOfLocs = (uint8_t)(i2c_eeprom_read_byte(I2CAddressAT24C256, EepCfg::locLibEepromAddressNumOfLocs));
 #elif APP_CFG_UC == APP_CFG_UC_ESP8266
-    NumOfLocs = EEPROM.read(EepCfg::locLibEepromAddressNumOfLocs);
+    NumOfLocs       = EEPROM.read(EepCfg::locLibEepromAddressNumOfLocs);
 #endif
     return (NumOfLocs);
 }
