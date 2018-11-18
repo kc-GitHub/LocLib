@@ -38,7 +38,6 @@ void LocLib::Init(LocStorage Storage)
     m_AcOption = m_LocStorage.AcOptionGet();
 
     /* Read data from EEPROM of first loc. */
-    m_LocLibData.Addres = 55;
     m_LocStorage.LocDataGet(&m_LocLibData, 0);
     m_NumberOfLocs = m_LocStorage.NumberOfLocsGet();
 

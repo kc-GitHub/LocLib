@@ -104,6 +104,7 @@ bool LocStorage::VersionCheck()
 
     if (Version != EepCfg::EepromVersion)
     {
+        EraseEeprom();
 #if APP_CFG_UC == APP_CFG_UC_STM32
         i2c_eeprom_write_byte(I2CAddressAT24C256, EepCfg::EepromVersionAddress, (byte)(EepCfg::EepromVersion));
 #elif APP_CFG_UC == APP_CFG_UC_ESP8266
@@ -285,4 +286,19 @@ bool LocStorage::LocDataSet(LocLibData* DataPtr, uint8_t Index)
 #endif
 
     return (Result);
+}
+
+void LocStorage::EraseEeprom(void)
+{
+    uint16_t Index = 0;
+
+#if APP_CFG_UC == APP_CFG_UC_ESP8266
+    for (Index = 0; Index < SPI_FLASH_SEC_SIZE; Index++)
+    {
+        EEPROM.write(Index, 0xFF);
+    }
+    EEPROM.commit();
+#else
+
+#endif
 }

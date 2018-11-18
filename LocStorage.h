@@ -28,6 +28,7 @@ public:
     void NumberOfLocsSet(uint8_t numberOfLocs);
     bool LocDataGet(LocLibData* DataPtr, uint8_t Index);
     bool LocDataSet(LocLibData* DataPtr, uint8_t Index);
+    void EraseEeprom(void);
 
 private:
 #if APP_CFG_UC == APP_CFG_UC_STM32
