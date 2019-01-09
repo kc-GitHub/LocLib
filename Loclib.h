@@ -51,7 +51,7 @@ public:
     /**
      * Increase, decrease, stop or reverse direction of selected loc.
      */
-    bool SpeedSet(int8_t Delta);
+    uint16_t SpeedSet(int8_t Delta);
 
     /**
      * Get actual speed of selected loc.
@@ -177,17 +177,17 @@ private:
     /**
      * Increase the speed.
      */
-    void SpeedIncrease(void);
+    uint16_t SpeedIncrease(void);
 
     /**
      * Decrease the speed.
      */
-    void SpeedDecrease(void);
+    uint16_t SpeedDecrease(void);
 
     /**
      * Set speed to zero or change direction when speed already 0.
      */
-    void SpeedStopOrChangeDirection(void);
+    uint16_t SpeedStopOrChangeDirection(void);
 
     LocLibData m_LocLibData; /* Data of actual selected loc. */
     LocStorage m_LocStorage;

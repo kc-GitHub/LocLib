@@ -55,16 +55,16 @@ LocLibData* LocLib::DataGet(void) { return (&m_LocLibData); }
 
 /***********************************************************************************************************************
  */
-bool LocLib::SpeedSet(int8_t Delta)
+uint16_t LocLib::SpeedSet(int8_t Delta)
 {
-    bool Result = true;
+    uint16_t Speed = 0xFFFF;
 
     if (m_AcOption == false)
     {
         if (Delta == 0)
         {
             /* Stop loc or when already stop change direction. */
-            SpeedStopOrChangeDirection();
+            Speed = SpeedStopOrChangeDirection();
         }
         else if (Delta > 0)
         {
@@ -79,12 +79,12 @@ bool LocLib::SpeedSet(int8_t Delta)
                 if (m_LocLibData.Dir == directionForward)
                 {
                     /* Handle speed increase*/
-                    SpeedIncrease();
+                    Speed = SpeedIncrease();
                 }
                 else
                 {
                     /* Handle speed decrease*/
-                    SpeedDecrease();
+                    Speed = SpeedDecrease();
                 }
             }
         }
@@ -95,19 +95,20 @@ bool LocLib::SpeedSet(int8_t Delta)
             if ((m_LocLibData.Speed == 0) && (m_LocLibData.Dir == directionForward))
             {
                 m_LocLibData.Dir = directionBackWard;
+                Speed            = m_LocLibData.Speed;
             }
             else
             {
                 if (m_LocLibData.Dir == directionForward)
                 {
                     /* Handle speed decrease*/
-                    SpeedDecrease();
+                    Speed = SpeedDecrease();
                 }
                 else
                 {
 
                     /* Handle speed increase*/
-                    SpeedIncrease();
+                    Speed = SpeedIncrease();
                 }
             }
         }
@@ -118,12 +119,12 @@ bool LocLib::SpeedSet(int8_t Delta)
         if (Delta > 0)
         {
             /* Handle speed increase*/
-            SpeedIncrease();
+            Speed = SpeedIncrease();
         }
         else if (Delta < 0)
         {
             /* Handle speed decrease*/
-            SpeedDecrease();
+            Speed = SpeedDecrease();
         }
         else
         {
@@ -133,31 +134,32 @@ bool LocLib::SpeedSet(int8_t Delta)
     }
 
     /* Limit speed based on decoder type. */
-    switch (m_LocLibData.Steps)
+    if (Speed != 0xFFFF)
     {
-    case decoderStep14:
-        if (m_LocLibData.Speed > 14)
+        switch (m_LocLibData.Steps)
         {
-            m_LocLibData.Speed = 14;
-            Result             = false;
+        case decoderStep14:
+            if (Speed > 14)
+            {
+                Speed = 14;
+            }
+            break;
+        case decoderStep28:
+            if (Speed > 28)
+            {
+                Speed = 28;
+            }
+            break;
+        case decoderStep128:
+            if (Speed > 127)
+            {
+                Speed = 127;
+            }
+            break;
         }
-        break;
-    case decoderStep28:
-        if (m_LocLibData.Speed > 28)
-        {
-            m_LocLibData.Speed = 28;
-            Result             = false;
-        }
-        break;
-    case decoderStep128:
-        if (m_LocLibData.Speed > 127)
-        {
-            m_LocLibData.Speed = 127;
-            Result             = false;
-        }
-        break;
     }
-    return (Result);
+
+    return (Speed);
 }
 
 /***********************************************************************************************************************
@@ -497,47 +499,60 @@ LocLibData* LocLib::LocGetAllDataByIndex(uint8_t Index)
 
 /***********************************************************************************************************************
  */
-void LocLib::SpeedIncrease(void)
+uint16_t LocLib::SpeedIncrease(void)
 {
+    uint16_t Speed = m_LocLibData.Speed;
+
     if ((m_LocLibData.Speed >= 20) && (m_LocLibData.Steps == decoderStep128))
     {
-        m_LocLibData.Speed += 2;
+        Speed += 2;
     }
     else
     {
-        m_LocLibData.Speed++;
+        Speed++;
     }
+
+    return (Speed);
 }
 
 /***********************************************************************************************************************
  */
-void LocLib::SpeedDecrease(void)
+uint16_t LocLib::SpeedDecrease(void)
 {
-    if (m_LocLibData.Speed > 0)
+    uint16_t Speed = m_LocLibData.Speed;
+
+    if (Speed > 0)
     {
-        if ((m_LocLibData.Speed > 20) && (m_LocLibData.Steps == decoderStep128))
+        if ((Speed > 20) && (m_LocLibData.Steps == decoderStep128))
         {
-            m_LocLibData.Speed -= 2;
+            Speed -= 2;
         }
         else if (m_LocLibData.Speed > 0)
         {
-            m_LocLibData.Speed--;
+            Speed--;
         }
     }
+
+    return (Speed);
 }
 
 /***********************************************************************************************************************
  */
-void LocLib::SpeedStopOrChangeDirection(void)
+uint16_t LocLib::SpeedStopOrChangeDirection(void)
 {
+    uint16_t Speed;
     if (m_LocLibData.Speed != 0)
     {
+        Speed              = 0;
         m_LocLibData.Speed = 0;
     }
     else
     {
         DirectionToggle();
+        Speed = m_LocLibData.Speed;
     }
+
+    return (Speed);
 }
 
 /***********************************************************************************************************************
