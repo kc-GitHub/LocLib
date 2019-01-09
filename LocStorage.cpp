@@ -290,9 +290,9 @@ bool LocStorage::LocDataSet(LocLibData* DataPtr, uint8_t Index)
 
 void LocStorage::EraseEeprom(void)
 {
+#if APP_CFG_UC == APP_CFG_UC_ESP8266
     uint16_t Index = 0;
 
-#if APP_CFG_UC == APP_CFG_UC_ESP8266
     for (Index = 0; Index < SPI_FLASH_SEC_SIZE; Index++)
     {
         EEPROM.write(Index, 0xFF);
