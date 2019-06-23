@@ -124,6 +124,11 @@ public:
     uint16_t GetActualLocAddress(void);
 
     /**
+     * Get name of the actual selected loc.
+     */
+    char* GetLocName(void);
+
+    /**
      * Check if loc is present in EEPROM.
      */
     uint8_t CheckLoc(uint16_t address);
@@ -131,7 +136,7 @@ public:
     /**
      * Store locomotive in EEPROM.
      */
-    bool StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeAction);
+    bool StoreLoc(uint16_t address, uint8_t* FunctionAssignment, char* Name, store storeAction);
 
     /**
      * Remove loc with given address from EEPROM.

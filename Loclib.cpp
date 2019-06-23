@@ -31,7 +31,10 @@ void LocLib::Init(LocStorage Storage)
     {
         InitialLocStore();
         m_LocStorage.NumberOfLocsSet(m_NumberOfLocs);
-        StoreLoc(m_LocLibData.Addres, m_LocLibData.FunctionAssignment, storeAdd);
+        StoreLoc(m_LocLibData.Addres, m_LocLibData.FunctionAssignment, NULL, storeAdd);
+
+        m_LocStorage.AcOptionSet(0);
+        m_LocStorage.EmergencyOptionSet(0);
     }
 
     /* Check AC option.*/
@@ -311,6 +314,10 @@ uint16_t LocLib::GetActualLocAddress(void) { return (m_LocLibData.Addres); }
 
 /***********************************************************************************************************************
  */
+char* LocLib::GetLocName(void) { return (m_LocLibData.Name); }
+
+/***********************************************************************************************************************
+ */
 uint8_t LocLib::CheckLoc(uint16_t address)
 {
     bool Found    = false;
@@ -342,7 +349,7 @@ uint8_t LocLib::CheckLoc(uint16_t address)
 
 /***********************************************************************************************************************
  */
-bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeAction)
+bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssignment, char* Name, store storeAction)
 {
     LocLibData Data;
     uint8_t LocIndex;
@@ -358,7 +365,16 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
             /* Read data, update function data and store. */
             m_LocStorage.LocDataGet(&Data, LocIndex);
 
-            memcpy(Data.FunctionAssignment, FunctionAssigment, 5);
+            if (Name != NULL)
+            {
+                memset(Data.Name, '\0', sizeof(Data.Name));
+                memcpy(Data.Name, Name, sizeof(Data.Name) - 1);
+            }
+            if (FunctionAssignment != NULL)
+            {
+                memcpy(Data.FunctionAssignment, FunctionAssignment, sizeof(Data.FunctionAssignment));
+            }
+
             m_LocStorage.LocDataSet(&Data, LocIndex);
 
             Result = true;
@@ -379,7 +395,8 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssigment, store storeA
                 Data.Dir      = directionForward;
                 Data.Speed    = 0;
                 Data.Function = 0;
-                memcpy(Data.FunctionAssignment, FunctionAssigment, 5);
+                memset(Data.Name, '\0', sizeof(Data.Name));
+                memcpy(Data.FunctionAssignment, FunctionAssignment, sizeof(Data.FunctionAssignment));
                 m_NumberOfLocs++;
 
                 m_LocStorage.NumberOfLocsSet(m_NumberOfLocs);
@@ -588,6 +605,7 @@ void LocLib::InitialLocStore(void)
     m_LocLibData.FunctionAssignment[2] = 2;
     m_LocLibData.FunctionAssignment[3] = 3;
     m_LocLibData.FunctionAssignment[4] = 4;
+    memset(m_LocLibData.Name, '\0', sizeof(m_LocLibData.Name));
 
     m_LocStorage.LocDataSet(&m_LocLibData, 0);
 }

@@ -82,7 +82,7 @@ byte i2c_eeprom_read_byte(int deviceaddress, unsigned int eeaddress)
 void LocStorage::Init()
 {
 #if APP_CFG_UC == APP_CFG_UC_ESP8266
-    EEPROM.begin(SPI_FLASH_SEC_SIZE);
+    EEPROM.begin(SPI_FLASH_SEC_SIZE * 2);
 #else
     I2CAddressAT24C256 = 0x50;
     Wire.begin();
@@ -288,6 +288,8 @@ bool LocStorage::LocDataSet(LocLibData* DataPtr, uint8_t Index)
     return (Result);
 }
 
+/***********************************************************************************************************************
+ */
 void LocStorage::EraseEeprom(void)
 {
 #if APP_CFG_UC == APP_CFG_UC_ESP8266
