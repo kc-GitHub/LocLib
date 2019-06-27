@@ -395,7 +395,13 @@ bool LocLib::StoreLoc(uint16_t address, uint8_t* FunctionAssignment, char* Name,
                 Data.Dir      = directionForward;
                 Data.Speed    = 0;
                 Data.Function = 0;
+
                 memset(Data.Name, '\0', sizeof(Data.Name));
+                if (Name != NULL)
+                {
+                    memcpy(Data.Name, Name, sizeof(Data.Name) - 1);
+                }
+
                 memcpy(Data.FunctionAssignment, FunctionAssignment, sizeof(Data.FunctionAssignment));
                 m_NumberOfLocs++;
 
@@ -608,4 +614,5 @@ void LocLib::InitialLocStore(void)
     memset(m_LocLibData.Name, '\0', sizeof(m_LocLibData.Name));
 
     m_LocStorage.LocDataSet(&m_LocLibData, 0);
+    m_LocStorage.NumberOfLocsSet(1);
 }

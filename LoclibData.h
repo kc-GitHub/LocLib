@@ -40,7 +40,7 @@ struct LocLibData
     decoderSteps Steps;            /* Decoder steps of loc */
     uint32_t Function;             /* Actual functions of loc. */
     uint8_t FunctionAssignment[5]; /* Assigned functions to buttons of loc. */
-    char Name[9];                  /* Name of loc. */
+    char Name[11];                 /* Name of loc. */
 };
 
 #endif
