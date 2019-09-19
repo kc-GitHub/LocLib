@@ -304,3 +304,12 @@ void LocStorage::EraseEeprom(void)
 
 #endif
 }
+
+#if APP_CFG_UC == APP_CFG_UC_ESP8266
+void LocStorage::InvalidateAdc(void)
+{
+    uint8_t buttonAdcValid = 0;
+    EEPROM.write(EepCfg::ButtonAdcValuesAddressValid, buttonAdcValid);
+    EEPROM.commit();
+}
+#endif

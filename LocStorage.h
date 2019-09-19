@@ -29,6 +29,9 @@ public:
     bool LocDataGet(LocLibData* DataPtr, uint8_t Index);
     bool LocDataSet(LocLibData* DataPtr, uint8_t Index);
     void EraseEeprom(void);
+#if APP_CFG_UC == APP_CFG_UC_ESP8266
+    void InvalidateAdc();
+#endif
 
 private:
 #if APP_CFG_UC == APP_CFG_UC_STM32
