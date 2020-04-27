@@ -43,12 +43,12 @@ void LocLib::Init(LocStorage Storage)
     m_AcOption = m_LocStorage.AcOptionGet();
 
     /* Read data from EEPROM of first loc. */
-    LocIndex = m_LocStorage.SelectedLocIndexGet();
-    if (LocIndex > MaxNumberOfLocs)
+    m_ActualSelectedLoc = m_LocStorage.SelectedLocIndexGet();
+    if (m_ActualSelectedLoc > MaxNumberOfLocs)
     {
-        LocIndex = 0;
+        m_ActualSelectedLoc = 0;
     }
-    m_LocStorage.LocDataGet(&m_LocLibData, LocIndex);
+    m_LocStorage.LocDataGet(&m_LocLibData, m_ActualSelectedLoc);
     m_NumberOfLocs = m_LocStorage.NumberOfLocsGet();
 
     /* Get number of locs and check it... */
