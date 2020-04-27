@@ -25,6 +25,8 @@ void LocLib::Init(LocStorage Storage)
 {
     /* If new EEPROM version or initial empty EEPROM create one loc and store loc
        in EEPROM.*/
+    uint8_t LocIndex;
+
     m_LocStorage = Storage;
 
     if (m_LocStorage.VersionCheck() == false)
@@ -41,7 +43,12 @@ void LocLib::Init(LocStorage Storage)
     m_AcOption = m_LocStorage.AcOptionGet();
 
     /* Read data from EEPROM of first loc. */
-    m_LocStorage.LocDataGet(&m_LocLibData, 0);
+    LocIndex = m_LocStorage.SelectedLocIndexGet();
+    if (LocIndex > MaxNumberOfLocs)
+    {
+        LocIndex = 0;
+    }
+    m_LocStorage.LocDataGet(&m_LocLibData, LocIndex);
     m_NumberOfLocs = m_LocStorage.NumberOfLocsGet();
 
     /* Get number of locs and check it... */
@@ -55,6 +62,31 @@ void LocLib::Init(LocStorage Storage)
 /***********************************************************************************************************************
  */
 LocLibData* LocLib::DataGet(void) { return (&m_LocLibData); }
+
+/***********************************************************************************************************************
+ */
+void LocLib::UpdateLocData(uint16_t address)
+{
+    uint16_t Index = 0;
+    bool Found     = false;
+    LocLibData Data;
+
+    while ((Index < m_NumberOfLocs) && (Found == false))
+    {
+        // Read data from EEPROM and check address.
+        m_LocStorage.LocDataGet(&Data, Index);
+
+        if (Data.Addres == address)
+        {
+            Found = true;
+            memcpy(&m_LocLibData, &Data, sizeof(LocLibData));
+        }
+        else
+        {
+            Index++;
+        }
+    }
+}
 
 /***********************************************************************************************************************
  */
@@ -303,6 +335,7 @@ uint16_t LocLib::GetNextLoc(int8_t Delta)
         }
 
         m_LocStorage.LocDataGet(&m_LocLibData, m_ActualSelectedLoc);
+        m_LocStorage.SelectedLocIndexStore(m_ActualSelectedLoc);
     }
 
     return (m_LocLibData.Addres);
@@ -614,5 +647,6 @@ void LocLib::InitialLocStore(void)
     memset(m_LocLibData.Name, '\0', sizeof(m_LocLibData.Name));
 
     m_LocStorage.LocDataSet(&m_LocLibData, 0);
+    m_LocStorage.SelectedLocIndexStore(0);
     m_LocStorage.NumberOfLocsSet(1);
 }

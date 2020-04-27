@@ -49,6 +49,11 @@ public:
     LocLibData* DataGet();
 
     /**
+     * Update loc data.
+     */
+    void UpdateLocData(uint16_t address);
+
+    /**
      * Increase, decrease, stop or reverse direction of selected loc.
      */
     uint16_t SpeedSet(int8_t Delta);

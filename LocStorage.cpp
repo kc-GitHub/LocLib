@@ -290,6 +290,25 @@ bool LocStorage::LocDataSet(LocLibData* DataPtr, uint8_t Index)
 
 /***********************************************************************************************************************
  */
+void LocStorage::SelectedLocIndexStore(uint8_t Index)
+{
+    EEPROM.put(EepCfg::SelectedLocAddress, Index);
+    EEPROM.commit();
+}
+
+/***********************************************************************************************************************
+ */
+uint8_t LocStorage::SelectedLocIndexGet()
+{
+    uint8_t Index;
+
+    EEPROM.get(EepCfg::SelectedLocAddress, Index);
+
+    return (Index);
+}
+
+/***********************************************************************************************************************
+ */
 void LocStorage::EraseEeprom(void)
 {
 #if APP_CFG_UC == APP_CFG_UC_ESP8266
