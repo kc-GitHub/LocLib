@@ -39,7 +39,8 @@ public:
     LocLib();
 
     /**
-     * Init of loc module.
+     * Init of loc module. If new EEPROM version or initial empty EEPROM create one loc and store loc
+     * in EEPROM.
      */
     void Init(LocStorage Storage);
 

@@ -23,10 +23,6 @@ LocLib::LocLib()
  */
 void LocLib::Init(LocStorage Storage)
 {
-    /* If new EEPROM version or initial empty EEPROM create one loc and store loc
-       in EEPROM.*/
-    uint8_t LocIndex;
-
     m_LocStorage = Storage;
 
     if (m_LocStorage.VersionCheck() == false)
