@@ -104,6 +104,7 @@ uint16_t LocLib::SpeedSet(int8_t Delta)
             if ((m_LocLibData.Speed == 0) && (m_LocLibData.Dir == directionBackWard))
             {
                 m_LocLibData.Dir = directionForward;
+                Speed            = m_LocLibData.Speed;
             }
             else
             {
