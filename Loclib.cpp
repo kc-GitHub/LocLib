@@ -246,7 +246,7 @@ uint8_t LocLib::FunctionAssignedGet(uint8_t number)
 {
     uint8_t Index = 255;
 
-    if (number < 5)
+    if (number < MAX_FUNCTION_BUTTONS)
     {
         Index = m_LocLibData.FunctionAssignment[number];
     }
@@ -270,7 +270,7 @@ bool LocLib::FunctionAssignedGetStored(uint16_t address, uint8_t* functions)
         if (Data.Addres == address)
         {
             Found = true;
-            memcpy(functions, Data.FunctionAssignment, 5);
+            memcpy(functions, Data.FunctionAssignment, sizeof(Data.FunctionAssignment));
         }
         else
         {
@@ -636,11 +636,11 @@ void LocLib::InitialLocStore(void)
     m_LocLibData.Dir                   = directionForward;
     m_LocLibData.Speed                 = 0;
     m_ActualSelectedLoc                = 0;
-    m_LocLibData.FunctionAssignment[0] = 0;
-    m_LocLibData.FunctionAssignment[1] = 1;
-    m_LocLibData.FunctionAssignment[2] = 2;
-    m_LocLibData.FunctionAssignment[3] = 3;
-    m_LocLibData.FunctionAssignment[4] = 4;
+
+    for (uint8_t i = 0; i < MAX_FUNCTION_BUTTONS; i++)
+    {
+        m_LocLibData.FunctionAssignment[i] = i;
+    }
     memset(m_LocLibData.Name, '\0', sizeof(m_LocLibData.Name));
 
     m_LocStorage.LocDataSet(&m_LocLibData, 0);
