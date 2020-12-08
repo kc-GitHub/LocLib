@@ -51,7 +51,7 @@ void i2c_eeprom_write_byte(int deviceaddress, unsigned int eeaddress, byte data)
 /**
  * Write data to eeprom.
  *
- * NOTE: The Arduino Wire library only has a 32 character buffer, so that is the maximun we can send.
+ * NOTE: The Arduino Wire library only has a 32 character buffer, so that is the maximum we can send.
  *       This buffer includes the two address bytes which limits our data payload to 30 bytes.
  *       https://www.hobbytronics.co.uk/eeprom-page-write
  *
@@ -81,7 +81,6 @@ void i2c_eeprom_write_page(int deviceaddress, unsigned int eeaddresspage, byte* 
 
         delay(10); // A small delay is required to give time for the eeprom to save the data.
 
-        Serial.println();
         chunkCount++;
         address += chunkSize;
     }
