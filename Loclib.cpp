@@ -3,9 +3,7 @@
  */
 
 #include "app_cfg.h"
-#include "eep_cfg.h"
 #include <Arduino.h>
-#include <EEPROM.h>
 #include <Loclib.h>
 #include <string.h>
 
@@ -244,14 +242,16 @@ void LocLib::FunctionToggle(uint8_t number) { m_LocLibData.Function ^= (1 << num
  */
 uint8_t LocLib::FunctionAssignedGet(uint8_t number)
 {
-    uint8_t Index = 255;
+    uint8_t function;
 
-    if (number < MAX_FUNCTION_BUTTONS)
-    {
-        Index = m_LocLibData.FunctionAssignment[number];
+    if (number < MAX_FUNCTION_BUTTONS) {
+        function = m_LocLibData.FunctionAssignment[number];
+    } else {
+        // return 99 because of invalid button number
+        function = 99;
     }
 
-    return (Index);
+    return (function);
 }
 
 /***********************************************************************************************************************

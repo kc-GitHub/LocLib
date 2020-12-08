@@ -35,13 +35,13 @@ enum direction
  */
 struct LocLibData
 {
-    uint16_t Addres;                                    /* Address of loc */
-    uint16_t Speed;                                     /* Actual speed of loc */
-    direction Dir;                                      /* Direction of loc */
-    decoderSteps Steps;                                 /* Decoder steps of loc */
-    uint32_t Function;                                  /* Actual functions of loc. */
-    uint8_t FunctionAssignment[MAX_FUNCTION_BUTTONS];   /* Assigned functions to buttons of loc. */
-    char Name[11];                 /* Name of loc. */
+    uint16_t Addres;                                    //  2 bytes, Address of loc
+    uint16_t Speed;                                     //  2 bytes, Actual speed of loc
+    direction Dir;                                      //  1 byte,  Direction of loc
+    decoderSteps Steps;                                 //  1 byte,  Decoder steps of loc
+    uint32_t Function;                                  //  4 bytes, Actual functions of loc.
+    uint8_t FunctionAssignment[MAX_FUNCTION_BUTTONS];   // 10 bytes, Assigned functions to buttons of loc.
+    char Name[11];                                      // 11 bytes, Name of loc.
 };
 
 #endif
