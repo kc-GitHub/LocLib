@@ -48,18 +48,43 @@ void i2c_eeprom_write_byte(int deviceaddress, unsigned int eeaddress, byte data)
     delay(100);
 }
 
-/***********************************************************************************************************************
+/**
+ * Write data to eeprom.
+ *
+ * NOTE: The Arduino Wire library only has a 32 character buffer, so that is the maximun we can send.
+ *       This buffer includes the two address bytes which limits our data payload to 30 bytes.
+ *       https://www.hobbytronics.co.uk/eeprom-page-write
+ *
+ *       So we send data in 30 byte chunks in a loop.
  */
 void i2c_eeprom_write_page(int deviceaddress, unsigned int eeaddresspage, byte* data, byte length)
 {
-    Wire.beginTransmission(deviceaddress);
-    Wire.write((int)(eeaddresspage >> 8));   // MSB
-    Wire.write((int)(eeaddresspage & 0xFF)); // LSB
-    byte c;
-    for (c = 0; c < length; c++)
-        Wire.write(data[c]);
-    Wire.endTransmission();
-    delay(100);
+    const uint8_t chunkSize = 30;
+
+    uint16_t chunkCount = 0;
+    uint16_t address = eeaddresspage;
+
+    while (address < eeaddresspage + length) {
+        Wire.beginTransmission(deviceaddress);
+        Wire.write((int)(address >> 8));   // MSB
+        Wire.write((int)(address & 0xFF)); // LSB
+
+        for (uint8_t i = 0; i < chunkSize; i++) {
+            uint8_t  byteToSend = i + chunkCount * chunkSize;
+            if (byteToSend < length) {
+                Wire.write(data[byteToSend]);
+            } else {
+                break;
+            }
+        }
+        Wire.endTransmission();
+
+        delay(10); // A small delay is required to give time for the eeprom to save the data.
+
+        Serial.println();
+        chunkCount++;
+        address += chunkSize;
+    }
 }
 
 /***********************************************************************************************************************
@@ -239,18 +264,16 @@ bool LocStorage::LocDataGet(LocLibData* DataPtr, uint8_t Index)
 {
     int Address = 0;
     bool Result = true;
-#if APP_CFG_UC == APP_CFG_UC_ESP8266
-    LocLibData Data;
-#else
-    uint8_t IndexRead    = 0;
-    uint8_t* DataReadPtr = (uint8_t*)(DataPtr);
-#endif
 
 #if APP_CFG_UC == APP_CFG_UC_ESP8266
+    LocLibData Data;
     Address = EepCfg::locLibEepromAddressData + ((sizeof(LocLibData) * Index));
     EEPROM.get(Address, Data);
     memcpy(DataPtr, &Data, sizeof(LocLibData));
 #else
+    uint8_t IndexRead    = 0;
+    uint8_t* DataReadPtr = (uint8_t*)(DataPtr);
+
     /* Get address and read data. */
     Address = EepCfg::locLibEepromAddressLocData + (EepCfg::EepromPageSize * Index);
     for (IndexRead = 0; IndexRead < sizeof(LocLibData); IndexRead++)
@@ -266,26 +289,23 @@ bool LocStorage::LocDataGet(LocLibData* DataPtr, uint8_t Index)
  */
 bool LocStorage::LocDataSet(LocLibData* DataPtr, uint8_t Index)
 {
-    bool Result = true;
-    int Address = 0;
-#if APP_CFG_UC == APP_CFG_UC_STM32
-    uint8_t* DataWritePtr = (uint8_t*)(DataPtr);
-#endif
-
 #if APP_CFG_UC == APP_CFG_UC_ESP8266
     LocLibData Data;
 
-    Address = EepCfg::locLibEepromAddressData + ((sizeof(LocLibData) * Index));
+    int Address = EepCfg::locLibEepromAddressData + ((sizeof(LocLibData) * Index));
     memcpy(&Data, DataPtr, sizeof(LocLibData));
     EEPROM.put(Address, Data);
     EEPROM.commit();
 #else
+
+    uint8_t* DataWritePtr = (uint8_t*)(DataPtr);
+
     /* Put data of a loc on a single page in the AT24C256. */
-    Address = EepCfg::locLibEepromAddressLocData + (EepCfg::EepromPageSize * Index);
+    int Address = EepCfg::locLibEepromAddressLocData + (EepCfg::EepromPageSize * Index);
     i2c_eeprom_write_page(I2CAddressAT24C256, Address, (byte*)(DataWritePtr), sizeof(LocLibData));
 #endif
 
-    return (Result);
+    return (true);
 }
 
 /***********************************************************************************************************************
@@ -329,6 +349,10 @@ void LocStorage::EraseEeprom(void)
     EEPROM.commit();
 #else
 
+//    for (Index = 0; Index < EepCfg::locLibEepromAddressLocData; Index++) {
+//        i2c_eeprom_write_page(I2CAddressAT24C256, Address, (byte*)(DataWritePtr), sizeof(LocLibData));
+//        i2c_eeprom_write_byte(I2CAddressAT24C256, Index, 0xFF);
+//    }
 #endif
 }
 
